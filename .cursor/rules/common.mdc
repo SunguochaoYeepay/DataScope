@@ -1,0 +1,66 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+[general]
+enable_security_headers = true
+enable_rate_limiting = true
+enable_input_validation = true
+
+[headers]
+x_frame_options = "DENY"
+x_content_type_options = "nosniff"
+x_xss_protection = "1; mode=block"
+strict_transport_security = "max-age=31536000; includeSubDomains"
+
+[csp]
+enable = true
+default_src = ["'self'"]
+script_src = ["'self'", "'unsafe-inline'"]
+style_src = ["'self'", "'unsafe-inline'"]
+img_src = ["'self'", "data:", "https:"]
+
+[rate_limiting]
+requests_per_minute = 60
+burst_size = 100
+
+[authentication]
+require_strong_passwords = true
+password_min_length = 8
+require_special_chars = true
+require_numbers = true
+require_uppercase = true
+
+[session]
+secure_cookies = true
+http_only = true
+same_site = "Lax"
+session_lifetime = 3600 
+
+[editor]
+tab_size = 2
+insert_spaces = true
+auto_format = true
+format_on_save = true
+
+[language.vue]
+file_patterns = ["*.vue"]
+tab_size = 2
+
+[language.java]
+file_patters = ["*.java"]
+tab_size = 4
+
+[git]
+auto_fetch = true
+auto_push = false
+
+[security]
+enable_cors = true
+enable_csp = true
+
+[performance]
+enable_code_splitting = true
+enable_lazy_loading = true
+enable_caching = true

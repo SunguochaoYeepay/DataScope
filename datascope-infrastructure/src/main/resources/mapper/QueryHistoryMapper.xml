@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.datascope.infrastructure.repository.mapper.QueryHistoryMapper">
+    
+    <!-- 基础列映射 -->
+    <resultMap id="BaseResultMap" type="com.datascope.domain.model.query.QueryHistory">
+        <id column="id" property="id" />
+        <result column="query_id" property="queryId" />
+        <result column="parameters" property="parameters" />
+        <result column="execution_time" property="executionTime" />
+        <result column="affected_rows" property="affectedRows" />
+        <result column="status" property="status" />
+        <result column="error_message" property="errorMessage" />
+        <result column="execution_ip" property="executionIp" />
+        <result column="created_at" property="createdAt" />
+        <result column="created_by" property="createdBy" />
+    </resultMap>
+
+    <!-- 所有列 -->
+    <sql id="Base_Column_List">
+        id, query_id, parameters, execution_time, affected_rows,
+        status, error_message, execution_ip, created_at, created_by
+    </sql>
+
+    <!-- 分页查询用户的查询历史 -->
+    <select id="findUserHistoryByPage" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM tbl_query_history
+        WHERE created_by = #{userId}
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 统计用户的查询历史总数 -->
+    <select id="countUserHistory" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM tbl_query_history
+        WHERE created_by = #{userId}
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <!-- 批量插入查询历史 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO tbl_query_history (
+        <include refid="Base_Column_List" />
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id}, #{item.queryId}, #{item.parameters},
+            #{item.executionTime}, #{item.affectedRows}, #{item.status},
+            #{item.errorMessage}, #{item.executionIp},
+            #{item.createdAt}, #{item.createdBy}
+            )
+        </foreach>
+    </insert>
+
+    <!-- 查询指定时间范围内的执行统计 -->
+    <select id="getExecutionStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_executions,
+            AVG(execution_time) as avg_execution_time,
+            MAX(execution_time) as max_execution_time,
+            MIN(execution_time) as min_execution_time,
+            SUM(affected_rows) as total_affected_rows,
+            COUNT(CASE WHEN status = 'SUCCESS' THEN 1 END) as success_count,
+            COUNT(CASE WHEN status = 'FAILED' THEN 1 END) as failed_count
+        FROM tbl_query_history
+        WHERE created_at BETWEEN #{startTime} AND #{endTime}
+        <if test="userId != null">
+            AND created_by = #{userId}
+        </if>
+        <if test="queryId != null">
+            AND query_id = #{queryId}
+        </if>
+    </select>
+
+    <!-- 查询最近失败的查询历史 -->
+    <select id="findRecentFailures" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM tbl_query_history
+        WHERE status = 'FAILED'
+        <if test="userId != null">
+            AND created_by = #{userId}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询执行时间超过阈值的查询历史 -->
+    <select id="findSlowQueries" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM tbl_query_history
+        WHERE execution_time > #{threshold}
+        <if test="startTime != null">
+            AND created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        ORDER BY execution_time DESC
+        LIMIT #{limit}
+    </select>
+</mapper>
