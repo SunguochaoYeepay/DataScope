@@ -13,7 +13,7 @@
     <artifactId>datascope-main</artifactId>
 
     <properties>
-        <springdoc.version>1.7.0</springdoc.version>
+        <springdoc.version>1.2.32</springdoc.version>
     </properties>
 
     <dependencies>
@@ -43,18 +43,6 @@
         <dependency>
             <groupId>com.datascope</groupId>
             <artifactId>datascope-api</artifactId>
-        </dependency>
-
-        <!-- OpenAPI Documentation -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-webmvc-core</artifactId>
-            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- Testing -->

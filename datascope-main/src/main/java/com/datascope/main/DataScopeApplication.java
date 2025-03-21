@@ -10,7 +10,7 @@ import org.mybatis.spring.annotation.MapperScan;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = "com.datascope")
-@MapperScan("com.datascope.infrastructure.repository.mapper")
+@MapperScan("com.datascope.infrastructure.mapper")
 public class DataScopeApplication {
 
     public static void main(String[] args) {

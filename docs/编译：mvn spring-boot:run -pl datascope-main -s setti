@@ -1,0 +1,14 @@
+编译：mvn spring-boot:run -pl datascope-main -s settings.xml
+启动：cd datascope-main && mvn spring-boot:run -s ../settings.xml
+
+构建：mvn -s settings.xml clean install -DskipTests
+
+vuetify :http://www.vuetifyjs.cn/
+
+
+<artifactId>datascope-main</artifactId
+<properties
+<springdoc.version>1.2.0</springdoc.version
+</properties
+<dependencies>
+现在让我们重新构建并启动项目:

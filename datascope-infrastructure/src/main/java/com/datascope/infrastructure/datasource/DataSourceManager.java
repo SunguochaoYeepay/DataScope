@@ -107,16 +107,23 @@ public class DataSourceManager {
      * 构建JDBC URL
      */
     private String buildJdbcUrl(DataSource dataSource) {
-        String baseUrl = switch (dataSource.getType()) {
-            case MYSQL -> String.format("jdbc:mysql://%s:%d/%s",
-                    dataSource.getHost(),
-                    dataSource.getPort(),
-                    dataSource.getDatabaseName());
-            case DB2 -> String.format("jdbc:db2://%s:%d/%s",
-                    dataSource.getHost(),
-                    dataSource.getPort(),
-                    dataSource.getDatabaseName());
-        };
+        String baseUrl;
+        switch (dataSource.getType()) {
+            case MYSQL:
+                baseUrl = String.format("jdbc:mysql://%s:%d/%s",
+                        dataSource.getHost(),
+                        dataSource.getPort(),
+                        dataSource.getDatabaseName());
+                break;
+            case DB2:
+                baseUrl = String.format("jdbc:db2://%s:%d/%s",
+                        dataSource.getHost(),
+                        dataSource.getPort(),
+                        dataSource.getDatabaseName());
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported database type: " + dataSource.getType());
+        }
 
         // 添加额外的连接参数
         if (dataSource.getParameters() != null && !dataSource.getParameters().isEmpty()) {
@@ -129,9 +136,13 @@ public class DataSourceManager {
      * 获取数据库验证查询语句
      */
     private String getValidationQuery(DataSourceType type) {
-        return switch (type) {
-            case MYSQL -> "SELECT 1";
-            case DB2 -> "SELECT 1 FROM SYSIBM.SYSDUMMY1";
-        };
+        switch (type) {
+            case MYSQL:
+                return "SELECT 1";
+            case DB2:
+                return "SELECT 1 FROM SYSIBM.SYSDUMMY1";
+            default:
+                throw new IllegalArgumentException("Unsupported database type: " + type);
+        }
     }
 }

@@ -1,17 +1,22 @@
 package com.datascope.infrastructure.repository.impl;
 
 import com.datascope.domain.model.query.QueryHistory;
-import com.datascope.infrastructure.repository.mapper.QueryHistoryMapper;
+import com.datascope.domain.repository.QueryHistoryRepository;
+import com.datascope.infrastructure.mapper.QueryHistoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * 查询历史仓储实现类测试

@@ -24,11 +24,15 @@ springdoc:
     path: /swagger-ui/index.html
     operationsSorter: method
     tagsSorter: alpha
-    disable-swagger-default-url: true
+    defaultModelsExpandDepth: -1
+    defaultModelExpandDepth: 3
+    displayRequestDuration: true
+    filter: true
   api-docs:
     path: /v3/api-docs
-  packages-to-scan: com.datascope
-  group-configs:
-    - group: 'default'
-      paths-to-match: '/**'
+  packages-to-scan: 
+    - com.datascope.api.controller
+    - com.datascope.controller
   show-actuator: false
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json

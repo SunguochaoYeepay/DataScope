@@ -24,12 +24,13 @@ spring:
 springdoc:
   api-docs:
     enabled: true
-    path: /v3/api-docs
+    path: /api/v3/api-docs
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
+    path: /api/swagger-ui/index.html
     tags-sorter: alpha
     operations-sorter: alpha
+    disable-swagger-default-url: true
   packages-to-scan: com.datascope.api.controller
   paths-to-match: /api/**
 

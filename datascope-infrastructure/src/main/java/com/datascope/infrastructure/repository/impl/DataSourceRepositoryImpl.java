@@ -3,27 +3,31 @@ package com.datascope.infrastructure.repository.impl;
 import com.datascope.domain.model.datasource.DataSource;
 import com.datascope.domain.repository.DataSourceRepository;
 import com.datascope.infrastructure.mapper.DataSourceMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 数据源仓库实现类
+ * 数据源仓储实现类
  */
 @Repository
-@RequiredArgsConstructor
 public class DataSourceRepositoryImpl implements DataSourceRepository {
 
     private final DataSourceMapper dataSourceMapper;
 
+    public DataSourceRepositoryImpl(DataSourceMapper dataSourceMapper) {
+        this.dataSourceMapper = dataSourceMapper;
+    }
+
     @Override
+    @Transactional
     public DataSource save(DataSource dataSource) {
         if (dataSource.getId() == null) {
             // 新增数据源
-            dataSource.setId(UUID.randomUUID().toString().replace("-", ""));
+            dataSource.setId(UUID.randomUUID().toString());
             dataSourceMapper.insert(dataSource);
         } else {
             // 更新数据源
@@ -34,7 +38,7 @@ public class DataSourceRepositoryImpl implements DataSourceRepository {
 
     @Override
     public Optional<DataSource> findById(String id) {
-        return dataSourceMapper.findById(id);
+        return Optional.ofNullable(dataSourceMapper.findById(id));
     }
 
     @Override
@@ -44,10 +48,11 @@ public class DataSourceRepositoryImpl implements DataSourceRepository {
 
     @Override
     public Optional<DataSource> findByName(String name) {
-        return dataSourceMapper.findByName(name);
+        return Optional.ofNullable(dataSourceMapper.findByName(name));
     }
 
     @Override
+    @Transactional
     public void deleteById(String id) {
         dataSourceMapper.deleteById(id);
     }

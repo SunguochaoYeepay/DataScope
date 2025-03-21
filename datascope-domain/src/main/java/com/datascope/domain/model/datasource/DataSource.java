@@ -30,7 +30,7 @@ public class DataSource {
     private String name;
 
     /**
-     * 数据源类型（如: MYSQL, DB2等）
+     * 数据源类型
      */
     @NotNull(message = "数据源类型不能为空")
     private DataSourceType type;
@@ -81,9 +81,9 @@ public class DataSource {
     private LocalDateTime createdAt;
 
     /**
-     * 更新时间
+     * 修改时间
      */
-    private LocalDateTime updatedAt;
+    private LocalDateTime modifiedAt;
 
     /**
      * 创建人
@@ -91,7 +91,7 @@ public class DataSource {
     private String createdBy;
 
     /**
-     * 更新人
+     * 修改人
      */
-    private String updatedBy;
+    private String modifiedBy;
 }

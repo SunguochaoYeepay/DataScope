@@ -2,7 +2,7 @@ package com.datascope.infrastructure.repository.impl;
 
 import com.datascope.domain.model.query.QueryHistory;
 import com.datascope.domain.repository.QueryHistoryRepository;
-import com.datascope.infrastructure.repository.mapper.QueryHistoryMapper;
+import com.datascope.infrastructure.mapper.QueryHistoryMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

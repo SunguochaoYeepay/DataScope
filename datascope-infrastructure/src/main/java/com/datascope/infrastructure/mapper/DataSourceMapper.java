@@ -4,7 +4,6 @@ import com.datascope.domain.model.datasource.DataSource;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 数据源Mapper接口
@@ -14,75 +13,105 @@ public interface DataSourceMapper {
     
     /**
      * 插入数据源
+     *
+     * @param dataSource 数据源信息
+     * @return 影响行数
      */
     @Insert({
-        "INSERT INTO data_source (id, name, type, host, port, database_name, username, password,",
-        "parameters, description, created_by, updated_by)",
-        "VALUES (#{id}, #{name}, #{type}, #{host}, #{port}, #{databaseName}, #{username}, #{password},",
-        "#{parameters}, #{description}, #{createdBy}, #{updatedBy})"
+        "INSERT INTO tbl_data_source (",
+        "id, name, type, host, port, database_name, username, password,",
+        "parameters, description, created_by, modified_by",
+        ") VALUES (",
+        "#{id}, #{name}, #{type}, #{host}, #{port}, #{databaseName}, #{username}, #{password},",
+        "#{parameters}, #{description}, #{createdBy}, #{modifiedBy}",
+        ")"
     })
-    void insert(DataSource dataSource);
+    int insert(DataSource dataSource);
 
     /**
      * 更新数据源
+     *
+     * @param dataSource 数据源信息
+     * @return 影响行数
      */
     @Update({
-        "UPDATE data_source",
-        "SET name = #{name}, type = #{type}, host = #{host}, port = #{port},",
-        "database_name = #{databaseName}, username = #{username}, password = #{password},",
-        "parameters = #{parameters}, description = #{description}, updated_by = #{updatedBy}",
+        "UPDATE tbl_data_source SET",
+        "name = #{name},",
+        "type = #{type},",
+        "host = #{host},",
+        "port = #{port},",
+        "database_name = #{databaseName},",
+        "username = #{username},",
+        "password = #{password},",
+        "parameters = #{parameters},",
+        "description = #{description},",
+        "modified_by = #{modifiedBy}",
         "WHERE id = #{id}"
     })
-    void update(DataSource dataSource);
+    int update(DataSource dataSource);
 
     /**
      * 根据ID查询数据源
+     *
+     * @param id 数据源ID
+     * @return 数据源信息
      */
-    @Select("SELECT * FROM data_source WHERE id = #{id}")
+    @Select("SELECT * FROM tbl_data_source WHERE id = #{id}")
     @Results({
         @Result(property = "databaseName", column = "database_name"),
         @Result(property = "createdAt", column = "created_at"),
-        @Result(property = "updatedAt", column = "updated_at"),
+        @Result(property = "modifiedAt", column = "modified_at"),
         @Result(property = "createdBy", column = "created_by"),
-        @Result(property = "updatedBy", column = "updated_by")
+        @Result(property = "modifiedBy", column = "modified_by")
     })
-    Optional<DataSource> findById(String id);
+    DataSource findById(String id);
 
     /**
      * 查询所有数据源
+     *
+     * @return 数据源列表
      */
-    @Select("SELECT * FROM data_source")
+    @Select("SELECT * FROM tbl_data_source")
     @Results({
         @Result(property = "databaseName", column = "database_name"),
         @Result(property = "createdAt", column = "created_at"),
-        @Result(property = "updatedAt", column = "updated_at"),
+        @Result(property = "modifiedAt", column = "modified_at"),
         @Result(property = "createdBy", column = "created_by"),
-        @Result(property = "updatedBy", column = "updated_by")
+        @Result(property = "modifiedBy", column = "modified_by")
     })
     List<DataSource> findAll();
 
     /**
      * 根据名称查询数据源
+     *
+     * @param name 数据源名称
+     * @return 数据源信息
      */
-    @Select("SELECT * FROM data_source WHERE name = #{name}")
+    @Select("SELECT * FROM tbl_data_source WHERE name = #{name}")
     @Results({
         @Result(property = "databaseName", column = "database_name"),
         @Result(property = "createdAt", column = "created_at"),
-        @Result(property = "updatedAt", column = "updated_at"),
+        @Result(property = "modifiedAt", column = "modified_at"),
         @Result(property = "createdBy", column = "created_by"),
-        @Result(property = "updatedBy", column = "updated_by")
+        @Result(property = "modifiedBy", column = "modified_by")
     })
-    Optional<DataSource> findByName(String name);
+    DataSource findByName(String name);
 
     /**
      * 根据ID删除数据源
+     *
+     * @param id 数据源ID
+     * @return 影响行数
      */
-    @Delete("DELETE FROM data_source WHERE id = #{id}")
-    void deleteById(String id);
+    @Delete("DELETE FROM tbl_data_source WHERE id = #{id}")
+    int deleteById(String id);
 
     /**
      * 检查数据源名称是否存在
+     *
+     * @param name 数据源名称
+     * @return 是否存在
      */
-    @Select("SELECT COUNT(*) FROM data_source WHERE name = #{name}")
+    @Select("SELECT COUNT(*) FROM tbl_data_source WHERE name = #{name}")
     boolean existsByName(String name);
 }
