@@ -1,72 +1,60 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
+import { routes } from './routes';
+import { useUserStore } from '@/stores';
+import { message } from 'ant-design-vue';
 
-const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'Home',
-    component: () => import('@/views/Home.vue'),
-    meta: {
-      title: '首页',
-      icon: 'mdi-home'
-    }
-  },
-  {
-    path: '/datasource',
-    name: 'Datasource',
-    component: () => import('@/views/datasource/DatasourceList.vue'),
-    meta: {
-      title: '数据源管理',
-      icon: 'mdi-database'
-    }
-  },
-  {
-    path: '/dataset',
-    name: 'Dataset',
-    component: () => import('@/views/dataset/DatasetList.vue'),
-    meta: {
-      title: '数据集管理',
-      icon: 'mdi-table'
-    }
-  },
-  {
-    path: '/visualization',
-    name: 'Visualization',
-    component: () => import('@/views/visualization/VisualizationList.vue'),
-    meta: {
-      title: '可视化管理',
-      icon: 'mdi-chart-box'
-    }
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('@/views/dashboard/DashboardList.vue'),
-    meta: {
-      title: '仪表板',
-      icon: 'mdi-monitor-dashboard'
-    }
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('@/views/settings/Settings.vue'),
-    meta: {
-      title: '系统设置',
-      icon: 'mdi-cog'
-    }
-  }
-]
-
+// 创建路由实例
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
-})
+  routes,
+});
 
-// 路由守卫：设置页面标题
-router.beforeEach((to, from, next) => {
-  document.title = `${to.meta.title} - DataScope` || 'DataScope'
-  next()
-})
+// 路由守卫
+router.beforeEach(async (to, from, next) => {
+  // 设置页面标题
+  document.title = to.meta.title ? `${to.meta.title} - DataScope` : 'DataScope';
 
-export default router
+  const userStore = useUserStore();
+  const isLoggedIn = userStore.isLoggedIn;
+  const token = userStore.token;
+
+  // 登录页面直接放行
+  if (to.name === 'login') {
+    if (isLoggedIn) {
+      next({ name: 'home' });
+    } else {
+      next();
+    }
+    return;
+  }
+
+  // 验证登录状态
+  if (!isLoggedIn) {
+    message.warning('请先登录');
+    next({ name: 'login', query: { redirect: to.fullPath } });
+    return;
+  }
+
+  // 验证token
+  if (!token) {
+    userStore.logout();
+    message.warning('登录已过期，请重新登录');
+    next({ name: 'login', query: { redirect: to.fullPath } });
+    return;
+  }
+
+  // 获取用户信息
+  if (!userStore.userInfo) {
+    try {
+      await userStore.fetchUserInfo();
+    } catch (error) {
+      message.error('获取用户信息失败');
+      next({ name: 'login', query: { redirect: to.fullPath } });
+      return;
+    }
+  }
+
+  next();
+});
+
+export default router;

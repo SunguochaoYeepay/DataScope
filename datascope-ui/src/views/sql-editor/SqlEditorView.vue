@@ -82,9 +82,10 @@
     </a-row>
 
     <a-modal
-      v-model:visible="tableInfoVisible"
-      :title="selectedTable ? `表结构: ${selectedTable}` : '表结构'"
+      v-model:open="tableInfoVisible"
+      title="表信息"
       width="800px"
+      :footer="null"
     >
       <a-table
         :columns="columnInfoColumns"

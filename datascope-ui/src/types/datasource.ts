@@ -1,58 +1,67 @@
-// 数据源类型定义
-export interface Datasource {
-  id: number
-  name: string
-  type: DatabaseType
-  host: string
-  port: number
-  database: string
-  username: string
-  password: string
-  status: ConnectionStatus
-  createdAt: string
-  updatedAt: string
-  description?: string
-  testing?: boolean
+/**
+ * 数据源类型
+ */
+export type DataSourceType = 'MySQL' | 'DB2';
+
+/**
+ * 数据源状态
+ */
+export type DataSourceStatus = 'active' | 'inactive' | 'error';
+
+/**
+ * 数据源信息
+ */
+export interface DataSource {
+  id: string;
+  name: string;
+  type: DataSourceType;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  status: DataSourceStatus;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 数据库类型
-export enum DatabaseType {
-  MySQL = 'MySQL',
-  PostgreSQL = 'PostgreSQL',
-  Oracle = 'Oracle',
-  SQLServer = 'SQLServer'
+/**
+ * 数据源创建参数
+ */
+export interface CreateDataSourceParams {
+  name: string;
+  type: DataSourceType;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  description?: string;
 }
 
-// 连接状态
-export enum ConnectionStatus {
-  Active = 'active',
-  Error = 'error',
-  Testing = 'testing'
+/**
+ * 数据源更新参数
+ */
+export interface UpdateDataSourceParams extends Partial<CreateDataSourceParams> {
+  id: string;
 }
 
-// 数据源表单数据
-export interface DatasourceFormData {
-  name: string
-  type: DatabaseType
-  host: string
-  port: number | string
-  database: string
-  username: string
-  password: string
-  description?: string
+/**
+ * 数据源查询参数
+ */
+export interface DataSourceQueryParams {
+  keyword?: string;
+  type?: DataSourceType;
+  status?: DataSourceStatus;
+  pageSize?: number;
+  current?: number;
 }
 
-// API 响应类型
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
-
-// 分页响应
-export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
+/**
+ * 数据源测试结果
+ */
+export interface TestConnectionResult {
+  success: boolean;
+  message: string;
+  details?: string;
 }

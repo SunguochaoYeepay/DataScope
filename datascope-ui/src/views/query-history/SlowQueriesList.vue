@@ -151,7 +151,7 @@
 
     <!-- 查询详情弹窗 -->
     <a-modal
-      v-model:visible="detailModalVisible"
+      v-model:open="detailModalVisible"
       title="查询详情"
       width="800px"
       :footer="null"
@@ -178,7 +178,7 @@
 
     <!-- 执行计划弹窗 -->
     <a-modal
-      v-model:visible="explainModalVisible"
+      v-model:open="explainModalVisible"
       title="执行计划"
       width="1000px"
       :footer="null"
@@ -195,7 +195,7 @@
 
     <!-- 优化建议弹窗 -->
     <a-modal
-      v-model:visible="optimizeModalVisible"
+      v-model:open="optimizeModalVisible"
       title="优化建议"
       width="800px"
       :footer="null"

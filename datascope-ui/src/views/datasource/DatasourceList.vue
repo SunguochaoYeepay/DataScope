@@ -1,501 +1,344 @@
-# 数据源管理页面
 <template>
-  <v-container fluid>
-    <!-- 页面标题区域 -->
-    <v-row class="mb-6">
-      <v-col>
-        <div class="text-h4 font-weight-bold">数据源管理</div>
-        <div class="text-subtitle-1 text-medium-emphasis">管理和配置您的数据连接</div>
-      </v-col>
-    </v-row>
-
-    <!-- 主要内容区域 -->
-    <v-card>
-      <!-- 工具栏 -->
-      <v-toolbar flat density="comfortable">
-        <v-text-field
-          v-model="search"
-          prepend-inner-icon="mdi-magnify"
-          label="搜索数据源"
-          single-line
-          hide-details
-          density="comfortable"
-          class="mr-4"
-          style="max-width: 300px"
-        ></v-text-field>
-
-        <v-spacer></v-spacer>
-
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          @click="openDialog()"
+  <div class="datasource-list">
+    <!-- 操作栏 -->
+    <div class="operation-bar">
+      <a-space>
+        <a-input-search
+          v-model:value="queryParams.keyword"
+          placeholder="搜索数据源"
+          style="width: 250px"
+          @search="handleSearch"
+        />
+        <a-select
+          v-model:value="queryParams.type"
+          placeholder="数据源类型"
+          style="width: 150px"
+          allowClear
+          @change="handleSearch"
         >
-          新建数据源
-        </v-btn>
-      </v-toolbar>
-
-      <v-divider></v-divider>
-
-      <!-- 数据表格 -->
-      <v-data-table
-        v-model:items-per-page="itemsPerPage"
-        :headers="headers"
-        :items="datasources"
-        :search="search"
-        :loading="loading"
-        hover
-      >
-        <!-- 类型列自定义 -->
-        <template v-slot:item.type="{ item }">
-          <v-chip
-            :color="getTypeColor(item.type)"
-            size="small"
-            label
-          >
-            {{ item.type }}
-          </v-chip>
-        </template>
-
-        <!-- 状态列自定义 -->
-        <template v-slot:item.status="{ item }">
-          <v-chip
-            :color="item.status === 'active' ? 'success' : 'error'"
-            size="small"
-            label
-          >
-            {{ item.status === 'active' ? '正常' : '异常' }}
-          </v-chip>
-        </template>
-
-        <!-- 操作列自定义 -->
-        <template v-slot:item.actions="{ item }">
-          <v-tooltip text="编辑">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                v-bind="props"
-                icon="mdi-pencil"
-                variant="text"
-                size="small"
-                color="primary"
-                class="mr-1"
-                @click="openDialog(item)"
-              ></v-btn>
-            </template>
-          </v-tooltip>
-
-          <v-tooltip text="测试连接">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                v-bind="props"
-                icon="mdi-database-check"
-                variant="text"
-                size="small"
-                color="info"
-                class="mr-1"
-                @click="testConnection(item)"
-                :loading="item.testing"
-              ></v-btn>
-            </template>
-          </v-tooltip>
-
-          <v-tooltip text="删除">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                v-bind="props"
-                icon="mdi-delete"
-                variant="text"
-                size="small"
-                color="error"
-                @click="confirmDelete(item)"
-              ></v-btn>
-            </template>
-          </v-tooltip>
-        </template>
-      </v-data-table>
-    </v-card>
-
-    <!-- 新建/编辑对话框 -->
-    <v-dialog
-      v-model="dialog"
-      max-width="600"
-      persistent
-    >
-      <v-card>
-        <v-card-title class="text-h5 pa-4">
-          {{ editingItem ? '编辑数据源' : '新建数据源' }}
-        </v-card-title>
-
-        <v-card-text>
-          <v-form ref="form" v-model="valid" @submit.prevent="saveDataSource">
-            <v-container>
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="formData.name"
-                    label="数据源名称"
-                    :rules="[v => !!v || '请输入数据源名称']"
-                    required
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12">
-                  <v-select
-                    v-model="formData.type"
-                    :items="['MySQL', 'PostgreSQL', 'Oracle', 'SQLServer']"
-                    label="数据库类型"
-                    :rules="[v => !!v || '请选择数据库类型']"
-                    required
-                  ></v-select>
-                </v-col>
-
-                <v-col cols="12" md="8">
-                  <v-text-field
-                    v-model="formData.host"
-                    label="主机地址"
-                    :rules="[v => !!v || '请输入主机地址']"
-                    required
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    v-model="formData.port"
-                    label="端口"
-                    type="number"
-                    :rules="[v => !!v || '请输入端口号']"
-                    required
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12">
-                  <v-text-field
-                    v-model="formData.database"
-                    label="数据库名称"
-                    :rules="[v => !!v || '请输入数据库名称']"
-                    required
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.username"
-                    label="用户名"
-                    :rules="[v => !!v || '请输入用户名']"
-                    required
-                  ></v-text-field>
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.password"
-                    label="密码"
-                    :type="showPassword ? 'text' : 'password'"
-                    :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    @click:append-inner="showPassword = !showPassword"
-                    :rules="[v => !!v || '请输入密码']"
-                    required
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions class="pa-4">
-          <v-spacer></v-spacer>
-          <v-btn
-            variant="tonal"
-            @click="dialog = false"
-          >
-            取消
-          </v-btn>
-          <v-btn
-            color="primary"
-            :loading="saving"
-            :disabled="!valid"
-            @click="saveDataSource"
-          >
-            保存
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- 删除确认对话框 -->
-    <v-dialog
-      v-model="deleteDialog"
-      max-width="400"
-    >
-      <v-card>
-        <v-card-title class="text-h5 pa-4">
-          确认删除
-        </v-card-title>
-
-        <v-card-text>
-          确定要删除数据源 "{{ deleteItem?.name }}" 吗？此操作无法撤销。
-        </v-card-text>
-
-        <v-card-actions class="pa-4">
-          <v-spacer></v-spacer>
-          <v-btn
-            variant="tonal"
-            @click="deleteDialog = false"
-          >
-            取消
-          </v-btn>
-          <v-btn
-            color="error"
-            :loading="deleting"
-            @click="deleteDataSource"
-          >
-            删除
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- 提示消息 -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="3000"
-    >
-      {{ snackbar.text }}
-      <template v-slot:actions>
-        <v-btn
-          variant="text"
-          @click="snackbar.show = false"
+          <a-select-option value="MySQL">MySQL</a-select-option>
+          <a-select-option value="DB2">DB2</a-select-option>
+        </a-select>
+        <a-select
+          v-model:value="queryParams.status"
+          placeholder="状态"
+          style="width: 150px"
+          allowClear
+          @change="handleSearch"
         >
-          关闭
-        </v-btn>
+          <a-select-option value="active">正常</a-select-option>
+          <a-select-option value="inactive">未启用</a-select-option>
+          <a-select-option value="error">异常</a-select-option>
+        </a-select>
+      </a-space>
+      <a-button type="primary" @click="handleCreate">
+        <template #icon><PlusOutlined /></template>
+        新建数据源
+      </a-button>
+    </div>
+
+    <!-- 数据表格 -->
+    <a-table
+      :columns="columns"
+      :data-source="datasourceStore.list"
+      :loading="datasourceStore.loading"
+      :pagination="{
+        total: datasourceStore.total,
+        current: datasourceStore.current,
+        pageSize: datasourceStore.pageSize,
+        showSizeChanger: true,
+        showQuickJumper: true,
+      }"
+      @change="handleTableChange"
+      row-key="id"
+    >
+      <!-- 数据源类型 -->
+      <template #type="{ text }">
+        <a-tag :color="text === 'MySQL' ? 'blue' : 'purple'">{{ text }}</a-tag>
       </template>
-    </v-snackbar>
-  </v-container>
+
+      <!-- 状态 -->
+      <template #status="{ text }">
+        <a-tag :color="getStatusColor(text)">{{ getStatusText(text) }}</a-tag>
+      </template>
+
+      <!-- 操作 -->
+      <template #action="{ record }">
+        <a-space>
+          <a-button type="link" size="small" @click="handleEdit(record)">
+            编辑
+          </a-button>
+          <a-button type="link" size="small" @click="handleTest(record)">
+            测试连接
+          </a-button>
+          <a-button type="link" size="small" @click="handleSync(record)">
+            同步元数据
+          </a-button>
+          <a-popconfirm
+            title="确定要删除该数据源吗？"
+            @confirm="handleDelete(record)"
+          >
+            <a-button type="link" size="small" danger>删除</a-button>
+          </a-popconfirm>
+        </a-space>
+      </template>
+    </a-table>
+
+    <!-- 测试连接结果弹窗 -->
+    <a-modal
+      v-model:open="testModalVisible"
+      title="测试连接结果"
+      :footer="null"
+      width="500px"
+    >
+      <a-result
+        :status="testResult.success ? 'success' : 'error'"
+        :title="testResult.success ? '连接成功' : '连接失败'"
+        :sub-title="testResult.message"
+      >
+        <template #extra>
+          <a-button type="primary" @click="testModalVisible = false">
+            确定
+          </a-button>
+        </template>
+      </a-result>
+      <div v-if="testResult.details" class="test-details">
+        <pre>{{ testResult.details }}</pre>
+      </div>
+    </a-modal>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import type { DataTableHeaders } from 'vuetify'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { PlusOutlined } from '@ant-design/icons-vue';
+import { message } from 'ant-design-vue';
+import type { TableProps } from 'ant-design-vue';
+import { useDataSourceStore } from '@/stores';
 
-// 类型定义
-interface Datasource {
-  id: number
-  name: string
-  type: string
-  host: string
-  port: number
-  database: string
-  username: string
-  password: string
-  status: 'active' | 'error'
-  createdAt: string
-  updatedAt: string
-  testing?: boolean
+// 数据源类型
+type DataSourceType = 'MySQL' | 'DB2';
+
+// 数据源状态
+type DataSourceStatus = 'active' | 'inactive' | 'error';
+
+// 数据源信息
+interface DataSource {
+  id: string;
+  name: string;
+  type: DataSourceType;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  status: DataSourceStatus;
+  updatedAt: string;
 }
+
+// 查询参数
+interface DataSourceQueryParams {
+  keyword?: string;
+  type?: DataSourceType;
+  status?: DataSourceStatus;
+  pageSize: number;
+  current: number;
+}
+
+// 测试连接结果
+interface TestConnectionResult {
+  success: boolean;
+  message: string;
+  details?: string;
+}
+
+const router = useRouter();
+const datasourceStore = useDataSourceStore();
+
+// 查询参数
+const queryParams = reactive<DataSourceQueryParams>({
+  keyword: '',
+  type: undefined,
+  status: undefined,
+  pageSize: 10,
+  current: 1,
+});
 
 // 表格列定义
-const headers: DataTableHeaders = [
-  { title: '数据源名称', key: 'name', align: 'start' },
-  { title: '类型', key: 'type', align: 'center', width: '120' },
-  { title: '主机地址', key: 'host' },
-  { title: '数据库', key: 'database' },
-  { title: '状态', key: 'status', align: 'center', width: '100' },
-  { title: '更新时间', key: 'updatedAt', align: 'center' },
-  { title: '操作', key: 'actions', align: 'center', width: '150', sortable: false },
-]
+const columns = [
+  {
+    title: '数据源名称',
+    dataIndex: 'name',
+    key: 'name',
+    ellipsis: true,
+  },
+  {
+    title: '类型',
+    dataIndex: 'type',
+    key: 'type',
+    slots: { customRender: 'type' },
+    width: 100,
+  },
+  {
+    title: '主机',
+    dataIndex: 'host',
+    key: 'host',
+    ellipsis: true,
+  },
+  {
+    title: '数据库',
+    dataIndex: 'database',
+    key: 'database',
+    ellipsis: true,
+  },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+    slots: { customRender: 'status' },
+    width: 100,
+  },
+  {
+    title: '更新时间',
+    dataIndex: 'updatedAt',
+    key: 'updatedAt',
+    width: 170,
+  },
+  {
+    title: '操作',
+    key: 'action',
+    slots: { customRender: 'action' },
+    width: 280,
+    fixed: 'right',
+  },
+];
 
-// 状态定义
-const search = ref('')
-const loading = ref(false)
-const datasources = ref<Datasource[]>([])
-const itemsPerPage = ref(10)
+// 测试连接相关
+const testModalVisible = ref(false);
+const testResult = ref<TestConnectionResult>({
+  success: false,
+  message: '',
+});
 
-// 表单状态
-const dialog = ref(false)
-const valid = ref(false)
-const form = ref<any>(null)
-const saving = ref(false)
-const editingItem = ref<Datasource | null>(null)
-const showPassword = ref(false)
+// 获取状态颜色
+const getStatusColor = (status: DataSourceStatus) => {
+  const colors: Record<DataSourceStatus, string> = {
+    active: 'success',
+    inactive: 'default',
+    error: 'error',
+  };
+  return colors[status];
+};
 
-// 删除对话框状态
-const deleteDialog = ref(false)
-const deleteItem = ref<Datasource | null>(null)
-const deleting = ref(false)
+// 获取状态文本
+const getStatusText = (status: DataSourceStatus) => {
+  const texts: Record<DataSourceStatus, string> = {
+    active: '正常',
+    inactive: '未启用',
+    error: '异常',
+  };
+  return texts[status];
+};
 
-// 提示消息状态
-const snackbar = reactive({
-  show: false,
-  text: '',
-  color: 'success',
-})
+// 搜索
+const handleSearch = () => {
+  queryParams.current = 1;
+  fetchList();
+};
 
-// 表单数据
-const formData = reactive({
-  name: '',
-  type: '',
-  host: '',
-  port: '',
-  database: '',
-  username: '',
-  password: '',
-})
-
-// 获取数据源列表
-const fetchDatasources = async () => {
-  loading.value = true
-  try {
-    // TODO: 替换为实际的 API 调用
-    const response = await fetch('/api/datasources')
-    datasources.value = await response.json()
-  } catch (error) {
-    showError('获取数据源列表失败')
-  } finally {
-    loading.value = false
+// 表格变化
+const handleTableChange: TableProps['onChange'] = (pagination) => {
+  if (pagination.current) {
+    queryParams.current = pagination.current;
   }
-}
-
-// 打开新建/编辑对话框
-const openDialog = (item?: Datasource) => {
-  editingItem.value = item || null
-  if (item) {
-    Object.assign(formData, {
-      name: item.name,
-      type: item.type,
-      host: item.host,
-      port: item.port,
-      database: item.database,
-      username: item.username,
-      password: item.password,
-    })
-  } else {
-    Object.assign(formData, {
-      name: '',
-      type: '',
-      host: '',
-      port: '',
-      database: '',
-      username: '',
-      password: '',
-    })
+  if (pagination.pageSize) {
+    queryParams.pageSize = pagination.pageSize;
   }
-  dialog.value = true
-}
+  fetchList();
+};
 
-// 保存数据源
-const saveDataSource = async () => {
-  if (!valid.value) return
+// 获取列表数据
+const fetchList = () => {
+  datasourceStore.fetchList(queryParams);
+};
 
-  saving.value = true
-  try {
-    // TODO: 替换为实际的 API 调用
-    const method = editingItem.value ? 'PUT' : 'POST'
-    const url = editingItem.value 
-      ? `/api/datasources/${editingItem.value.id}`
-      : '/api/datasources'
-    
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    })
+// 新建数据源
+const handleCreate = () => {
+  router.push({ name: 'datasource-create' });
+};
 
-    if (!response.ok) throw new Error('保存失败')
-
-    showSuccess(editingItem.value ? '更新成功' : '创建成功')
-    dialog.value = false
-    fetchDatasources()
-  } catch (error) {
-    showError(editingItem.value ? '更新失败' : '创建失败')
-  } finally {
-    saving.value = false
-  }
-}
-
-// 确认删除
-const confirmDelete = (item: Datasource) => {
-  deleteItem.value = item
-  deleteDialog.value = true
-}
-
-// 删除数据源
-const deleteDataSource = async () => {
-  if (!deleteItem.value) return
-
-  deleting.value = true
-  try {
-    // TODO: 替换为实际的 API 调用
-    const response = await fetch(`/api/datasources/${deleteItem.value.id}`, {
-      method: 'DELETE',
-    })
-
-    if (!response.ok) throw new Error('删除失败')
-
-    showSuccess('删除成功')
-    deleteDialog.value = false
-    fetchDatasources()
-  } catch (error) {
-    showError('删除失败')
-  } finally {
-    deleting.value = false
-  }
-}
+// 编辑数据源
+const handleEdit = (record: DataSource) => {
+  router.push({
+    name: 'datasource-edit',
+    params: { id: record.id },
+  });
+};
 
 // 测试连接
-const testConnection = async (item: Datasource) => {
-  item.testing = true
+const handleTest = async (record: DataSource) => {
   try {
-    // TODO: 替换为实际的 API 调用
-    const response = await fetch(`/api/datasources/${item.id}/test`, {
-      method: 'POST',
-    })
-
-    if (!response.ok) throw new Error('连接失败')
-
-    showSuccess('连接成功')
-  } catch (error) {
-    showError('连接失败')
-  } finally {
-    item.testing = false
+    testResult.value = await datasourceStore.testConnection({
+      type: record.type,
+      host: record.host,
+      port: record.port,
+      database: record.database,
+      username: record.username,
+      password: '', // 需要用户重新输入密码
+    });
+    testModalVisible.value = true;
+  } catch (error: any) {
+    message.error(error.message || '测试连接失败');
   }
-}
+};
 
-// 获取数据库类型对应的颜色
-const getTypeColor = (type: string): string => {
-  const colors: Record<string, string> = {
-    'MySQL': 'blue',
-    'PostgreSQL': 'purple',
-    'Oracle': 'red',
-    'SQLServer': 'green',
+// 同步元数据
+const handleSync = async (record: DataSource) => {
+  try {
+    await datasourceStore.syncMetadata(record.id);
+    message.success('同步成功');
+    fetchList(); // 刷新列表
+  } catch (error: any) {
+    message.error(error.message || '同步失败');
   }
-  return colors[type] || 'grey'
-}
+};
 
-// 显示成功提示
-const showSuccess = (text: string) => {
-  snackbar.text = text
-  snackbar.color = 'success'
-  snackbar.show = true
-}
+// 删除数据源
+const handleDelete = async (record: DataSource) => {
+  try {
+    await datasourceStore.delete(record.id);
+    message.success('删除成功');
+    fetchList(); // 刷新列表
+  } catch (error: any) {
+    message.error(error.message || '删除失败');
+  }
+};
 
-// 显示错误提示
-const showError = (text: string) => {
-  snackbar.text = text
-  snackbar.color = 'error'
-  snackbar.show = true
-}
-
-// 页面加载时获取数据
 onMounted(() => {
-  fetchDatasources()
-})
+  fetchList();
+});
 </script>
 
-<style scoped>
-.v-data-table {
-  --v-table-header-height: 48px;
+<style lang="scss" scoped>
+.datasource-list {
+  .operation-bar {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .test-details {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 4px;
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
 }
 </style>

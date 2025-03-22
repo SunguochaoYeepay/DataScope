@@ -1,17 +1,22 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import vuetify from './plugins/vuetify'
+import { createApp } from 'vue';
+import { store, useAppStore } from '@/stores';
+import App from './App.vue';
+import router from './router';
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/reset.css';
+import '@/styles/global.scss';
 
-import App from './App.vue'
-import router from './router'
-import components from './components'
-import './styles/global.scss'
+// 创建应用实例
+const app = createApp(App);
 
-const app = createApp(App)
+// 注册插件
+app.use(store);
+app.use(router);
+app.use(Antd);
 
-app.use(createPinia())
-app.use(router)
-app.use(vuetify)
-app.use(components)
+// 挂载应用
+app.mount('#app');
 
-app.mount('#app')
+// 初始化应用状态
+const appStore = useAppStore();
+appStore.initApp();

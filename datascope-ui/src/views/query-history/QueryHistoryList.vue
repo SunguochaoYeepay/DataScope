@@ -112,7 +112,7 @@
     </a-row>
 
     <a-modal
-      v-model:visible="detailVisible"
+      v-model:open="detailVisible"
       title="查询详情"
       width="800px"
       :footer="null"
