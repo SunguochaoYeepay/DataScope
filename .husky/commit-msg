@@ -1,0 +1,21 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 获取提交信息
+commit_msg=$(cat "$1")
+
+# 定义提交信息格式
+commit_pattern="^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .{1,50}"
+
+if ! echo "$commit_msg" | grep -qE "$commit_pattern"; then
+    echo "错误: 提交信息格式不正确"
+    echo "正确格式: <type>(<scope>): <subject>"
+    echo "type: feat|fix|docs|style|refactor|test|chore"
+    echo "scope: 可选，表示影响范围"
+    echo "subject: 简短描述，不超过50个字符"
+    echo ""
+    echo "示例:"
+    echo "feat(user): 添加用户登录功能"
+    echo "fix(auth): 修复token过期问题"
+    exit 1
+fi

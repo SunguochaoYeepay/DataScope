@@ -1,0 +1,24 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+# 检查代码格式
+echo "Checking code format..."
+mvn spotless:check
+
+# 运行单元测试
+echo "Running unit tests..."
+mvn test -DskipTests=false
+
+# 检查代码风格
+echo "Checking code style..."
+mvn checkstyle:check
+
+# 如果上述命令有任何一个失败，则阻止提交
+if [ $? -ne 0 ]; then
+  echo "Pre-commit checks failed. Please fix the issues and try again."
+  exit 1
+fi
+
+echo "All pre-commit checks passed!"
