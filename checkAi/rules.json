@@ -1,0 +1,78 @@
+{
+    "workflow_rules": {
+        "start_statement": {
+            "pattern": "^我开始拉~~",
+            "description": "响应必须以'我开始拉~~'开始",
+            "required": true
+        },
+        "risk_assessment": {
+            "pattern": "风险评估[：:][\\s\\S]*?(?=\\n\\n|$)",
+            "description": "必须包含风险评估",
+            "required": true
+        },
+        "implementation_plan": {
+            "pattern": "实现方案[：:][\\s\\S]*?(?=\\n\\n|$)",
+            "description": "执行前必须提供方案",
+            "required": true
+        },
+        "changelog_update": {
+            "pattern": "更新(changelog|CHANGELOG)(\\.md)?",
+            "description": "必须更新changelog",
+            "required": true
+        },
+        "readme_update": {
+            "pattern": "更新(README|readme)(\\.md)?",
+            "description": "必须更新README",
+            "required": true
+        }
+    },
+    "code_quality_rules": {
+        "type_annotation": {
+            "pattern": "(def\\s+\\w+\\s*\\([^)]*\\)\\s*->\\s*[\\w\\[\\],\\s]+:)|(:\\s*[A-Z]\\w+(?:\\[.*?\\])?\\s*=)",
+            "description": "函数和变量必须包含类型注解",
+            "required": true
+        },
+        "function_length": {
+            "pattern": "(?!.{500})",
+            "description": "函数不能超过50行",
+            "required": true
+        },
+        "variable_naming": {
+            "pattern": "[a-z_][a-z0-9_]*\\s*[=:]",
+            "description": "变量命名必须规范(小写字母和下划线)",
+            "required": true
+        },
+        "docstring": {
+            "pattern": "(\"\"\"[\\s\\S]*?\"\"\")|('''[\\s\\S]*?''')",
+            "description": "函数必须包含文档字符串",
+            "required": true
+        },
+        "comments": {
+            "pattern": "#.*$|\"\"\"[\\s\\S]*?\"\"\"|'''[\\s\\S]*?'''",
+            "description": "关键代码必须包含注释说明",
+            "required": true
+        }
+    },
+    "security_rules": {
+        "sensitive_info": {
+            "pattern": "(password|secret|key|token|pwd)\\s*=\\s*['\"][^'\"]+['\"]",
+            "description": "不能包含硬编码的敏感信息",
+            "required": true
+        },
+        "input_validation": {
+            "pattern": "(if\\s+not|raise\\s+\\w+|isinstance\\(|validate|len\\(.*?\\)|\\w+\\.strip\\(\\)|\\w+\\s*[><=]+\\s*\\d+)",
+            "description": "必须包含输入验证",
+            "required": false
+        },
+        "exception_handling": {
+            "pattern": "try[\\s\\S]*?except",
+            "description": "必须包含异常处理",
+            "required": false
+        },
+        "sql_injection": {
+            "pattern": "(execute|executemany|query)\\s*\\([^)]*[?%][^)]*\\)",
+            "description": "SQL查询必须使用参数化",
+            "required": false
+        }
+    }
+}

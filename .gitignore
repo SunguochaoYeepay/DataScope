@@ -32,5 +32,18 @@ build/
 ### VS Code ###
 .vscode/
 
-### Mac OS ###
+### Logs ###
+logs/
+*.log
+
+### Environment ###
+.env
+*.env
+
+### OS ###
 .DS_Store
+Thumbs.db
+
+### Application Secrets ###
+**/application-secret.yml
+**/application-secret.yaml

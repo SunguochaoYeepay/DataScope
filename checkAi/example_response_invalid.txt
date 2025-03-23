@@ -1,0 +1,19 @@
+开始执行任务。
+
+代码变更：
+```python
+def process_query(query):
+    # 直接处理查询
+    result = execute_query(query)
+    return result
+
+# 配置数据库连接
+db_password = "secret123"
+db_config = {
+    "host": "localhost",
+    "user": "admin",
+    "password": db_password
+}
+```
+
+提交代码。
