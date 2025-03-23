@@ -1,0 +1,17 @@
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/datascope?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: your_username
+    password: your_password
+    
+  # Redis配置
+  redis:
+    host: localhost
+    port: 6379
+    password: your_redis_password
+
+# JWT配置
+datascope:
+  security:
+    jwt-secret: your_jwt_secret
