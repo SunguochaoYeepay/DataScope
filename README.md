@@ -13,6 +13,7 @@ DataScope是一个集成了多数据源管理、元数据提取、低代码集�
 - ✅ 多数据源配置和管理
 - ✅ 数据源连接测试
 - ✅ 数据源状态监控
+- ✅ 安全的数据源凭据管理
 
 #### 元数据管理
 - ✅ 自动元数据提取
@@ -59,13 +60,33 @@ DataScope是一个集成了多数据源管理、元数据提取、低代码集�
 - MySQL 8.0
 - Redis 6.x
 
-### 环境变量配置
+### 配置说明
+
+#### 1. 创建配置文件
+在 `src/main/resources` 目录下创建 `application-secret.yml` 文件：
+
+```yaml
+spring:
+  datasource:
+    username: your_username
+    password: your_password
+
+datascope:
+  security:
+    jwt-secret: your_jwt_secret
+```
+
+注意：此文件包含敏感信息，已添加到 .gitignore
+
+#### 2. 环境变量配置（可选）
+如果不想使用配置文件，也可以使用环境变量：
+
 ```bash
 # 数据库配置
 export MYSQL_USERNAME=your_username
 export MYSQL_PASSWORD=your_password
 
-# Redis配置
+# Redis配置（可选）
 export REDIS_HOST=localhost
 export REDIS_PORT=6379
 export REDIS_PASSWORD=your_password
@@ -105,6 +126,7 @@ datascope/
 │   │   │           └── main/       # 启动模块
 │   │   └── resources/
 │   │       ├── application.yml     # 应用配置
+│   │       ├── application-secret.yml  # 敏感配置（不提交到git）
 │   │       └── logback-spring.xml  # 日志配置
 │   └── test/                       # 测试代码
 ├── pom.xml                         # 项目依赖
@@ -123,6 +145,12 @@ mvn test
 # 运行测试并生成覆盖率报告
 mvn test jacoco:report
 ```
+
+## 安全说明
+1. 所有敏感配置必须放在 `application-secret.yml` 中
+2. 禁止提交敏感配置到代码仓库
+3. 生产环境必须使用强密码和安全的JWT密钥
+4. 定期更新依赖包以修复安全漏洞
 
 ## 贡献指南
 1. Fork 项目
