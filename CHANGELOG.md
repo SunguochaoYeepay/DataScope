@@ -42,3 +42,5 @@
 - 增强SQL注入防护
 - 添加参数验证
 - 规范化异常处理
+- 升级MySQL Connector/J到8.3.0版本以修复安全漏洞
+- 升级PostgreSQL JDBC Driver到42.7.5版本以修复安全漏洞
