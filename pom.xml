@@ -22,8 +22,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spring-boot.version>2.7.18</spring-boot.version>
-        <mysql.version>8.0.33</mysql.version>
-        <postgresql.version>42.6.0</postgresql.version>
+        <mysql.version>8.3.0</mysql.version>
+        <postgresql.version>42.7.5</postgresql.version>
         <oracle.version>19.19.0.0</oracle.version>
         <hikari.version>5.0.1</hikari.version>
         <redis.version>3.1.0</redis.version>
