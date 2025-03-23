@@ -1,116 +1,135 @@
 # DataScope
 
-DataScope是一个智能数据管理和查询系统，提供数据源管理、元数据提取、智能查询等功能。
+智能数据管理和查询系统
+
+## 项目说明
+DataScope是一个集成了多数据源管理、元数据提取、低代码集成和AI增强功能的数据管理系统。
 
 ## 功能特性
 
-- 数据源管理
-  - 支持MySQL、DB2数据源
-  - 自动元数据提取
-  - 增量更新机制
+### 已实现功能 (60%)
 
-- 智能查询
-  - SQL查询
-  - 自然语言转SQL
-  - 查询历史记录
-  - 查询收藏
+#### 数据源管理
+- ✅ 多数据源配置和管理
+- ✅ 数据源连接测试
+- ✅ 数据源状态监控
 
-- 低代码集成
-  - 界面配置
-  - 显示规则
-  - 操作按钮
-  - 数据掩码
+#### 元数据管理
+- ✅ 自动元数据提取
+- ✅ MySQL元数据支持
+- ✅ PostgreSQL元数据支持
+- ✅ 元数据存储和检索
+- ✅ 元数据更新机制
+
+#### 数据预览
+- ✅ 表数据采样预览
+- ✅ 自定义排序和过滤
+- ✅ 系统字段过滤
+- ✅ 性能优化的数据加载
+
+### 开发中功能 (40%)
+
+#### 数据质量管理
+- ⏳ 质量规则引擎
+- ⏳ 数据质量检查
+- ⏳ 质量报告生成
+
+#### 权限管理
+- ⏳ 用户认证授权
+- ⏳ 细粒度权限控制
+- ⏳ 操作审计日志
+
+#### 系统管理
+- ⏳ 系统配置管理
+- ⏳ 任务调度管理
+- ⏳ 系统监控告警
 
 ## 技术栈
-
-- Java 11
-- Spring Boot 2.7
-- MyBatis 3.5
+- Java 17
+- Spring Boot 2.7.x
 - MySQL 8.0
-- Redis 7.2
-- OpenAPI 3.0
-
-## 项目结构
-
-```
-datascope/
-├── datascope-api        // API接口层
-├── datascope-app        // 应用服务层
-├── datascope-common     // 公共工具类
-├── datascope-domain     // 领域模型层
-├── datascope-facade     // 外部接口层
-├── datascope-infrastructure  // 基础设施层
-└── datascope-main      // 应用程序入口
-```
-
-### 模块说明
-
-- datascope-api: 提供RESTful API接口，包含接口定义、参数校验、响应封装等
-- datascope-app: 实现核心业务逻辑，包含服务编排、事务处理等
-- datascope-common: 提供公共工具类、常量定义、异常处理等
-- datascope-domain: 定义领域模型、聚合根、领域服务等
-- datascope-facade: 定义外部服务接口、DTO对象等
-- datascope-infrastructure: 实现持久化、缓存、消息等基础设施
-- datascope-main: 提供应用启动入口、配置加载等
+- Redis 6.x
+- Maven 3.8+
 
 ## 快速开始
 
 ### 环境要求
-
-- JDK 11+
+- JDK 17
 - Maven 3.8+
-- MySQL 8.0+
-- Redis 7.0+
+- MySQL 8.0
+- Redis 6.x
 
-### 构建
-
+### 环境变量配置
 ```bash
+# 数据库配置
+export MYSQL_USERNAME=your_username
+export MYSQL_PASSWORD=your_password
+
+# Redis配置
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+export REDIS_PASSWORD=your_password
+
+# 安全配置
+export JWT_SECRET=your_jwt_secret
+```
+
+### 构建运行
+```bash
+# 克隆项目
+git clone https://github.com/your-username/datascope.git
+cd datascope
+
+# 编译打包
 mvn clean package
+
+# 运行应用
+java -jar target/datascope-1.0.0-SNAPSHOT.jar
 ```
 
-### 运行
+### 验证部署
+访问 http://localhost:8080/api/actuator/health 检查应用状态
 
-```bash
-java -jar datascope-main/target/datascope-main-1.0.0-SNAPSHOT.jar
+## 项目结构
 ```
-
-### 配置
-
-主要配置项在 `application.yml` 中，包括：
-
-- 数据库连接
-- Redis连接
-- 安全配置
-- 查询限制
-- API限流
-
-## API文档
-
-启动应用后访问：http://localhost:8080/swagger-ui.html
-
-### API模块
-
-- 数据源管理API
-  - 数据源CRUD
-  - 元数据同步
-  - 连接测试
-
-- 查询管理API
-  - SQL执行
-  - 查询历史
-  - 收藏管理
-  - 执行统计
-
-- 低代码配置API
-  - 界面配置
-  - 显示规则
-  - 操作按钮
-  - 数据掩码
+datascope/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── datascope/
+│   │   │           ├── app/        # 应用层
+│   │   │           ├── domain/     # 领域层
+│   │   │           ├── facade/     # 接口层
+│   │   │           ├── infrastructure/  # 基础设施层
+│   │   │           └── main/       # 启动模块
+│   │   └── resources/
+│   │       ├── application.yml     # 应用配置
+│   │       └── logback-spring.xml  # 日志配置
+│   └── test/                       # 测试代码
+├── pom.xml                         # 项目依赖
+├── README.md                       # 项目说明
+└── CHANGELOG.md                    # 变更日志
+```
 
 ## 开发指南
+详见 [开发文档](docs/development.md)
 
-详见 [docs/design.md](docs/design.md) 和 [docs/user-stories.md](docs/user-stories.md)
+## 测试
+```bash
+# 运行测试
+mvn test
+
+# 运行测试并生成覆盖率报告
+mvn test jacoco:report
+```
+
+## 贡献指南
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交变更 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 提交 Pull Request
 
 ## 许可证
-
-MIT License
+MIT License - 详见 [LICENSE](LICENSE) 文件
