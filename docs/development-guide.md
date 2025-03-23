@@ -26,24 +26,33 @@ git clone https://github.com/your-username/datascope.git
 cd datascope
 ```
 
-2. 配置本地环境
+2. 使用快速启动脚本
+```bash
+# 进入脚本目录
+cd scripts
+
+# 初始化开发环境（创建数据库、安装依赖等）
+./init-dev.sh
+
+# 编辑本地配置
+vim ../src/main/resources/application-local.yml
+
+# 启动应用
+./start-dev.sh
+```
+
+3. 手动配置（如果不使用脚本）
 ```bash
 # 复制本地配置模板
 cp src/main/resources/application-local.yml.template src/main/resources/application-local.yml
 
 # 编辑本地配置
 vim src/main/resources/application-local.yml
-```
 
-3. 初始化数据库
-```bash
 # 创建数据库
 mysql -u root -p
 CREATE DATABASE datascope CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
 
-4. 启动应用
-```bash
 # 使用开发配置启动
 mvn spring-boot:run -Dspring-boot.run.profiles=dev,local
 ```
