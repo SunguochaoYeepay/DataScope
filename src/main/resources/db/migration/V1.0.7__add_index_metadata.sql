@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS `index_metadata` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `table_metadata_id` BIGINT NOT NULL COMMENT '表元数据ID',
-    `index_name` VARCHAR(100) NOT NULL COMMENT '索引名称',
+    `index_name` VARCHAR(100) NOT NULL COMMENT '索引名',
     `is_unique` BIT NOT NULL DEFAULT 0 COMMENT '是否唯一索引',
     `cardinality` BIGINT DEFAULT NULL COMMENT '基数',
     `index_size` BIGINT DEFAULT NULL COMMENT '索引大小(字节)',

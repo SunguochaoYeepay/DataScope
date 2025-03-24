@@ -1,76 +1,87 @@
 spring:
   application:
-    name: datascope
+    name: DataScope
   
   profiles:
     active: dev
   
-  # Swagger配置
+  # MVC配置
   mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
+    throw-exception-if-no-handler-found: true
   
   # 数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/datascope?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: datascope
-    password: "Datascope@123"
+    url: jdbc:mysql://localhost:3306/datascope?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: DataScope@123
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 10
       minimum-idle: 5
-      maximum-pool-size: 20
-      idle-timeout: 300000
-      connection-timeout: 20000
-      connection-test-query: SELECT 1
   
-  # Flyway配置
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
+  # SQL初始化配置 - 强化配置确保正确执行
+  sql:
+    init:
+      mode: always  # 总是执行初始化脚本
+      schema-locations: classpath:db/schema.sql, classpath:db/migration/V1.0.0__base_schema.sql, classpath:db/migration/V1.0.0__init_schema.sql  # 包含所有Flyway迁移脚本中的表结构
+      data-locations: classpath:db/data.sql
+      continue-on-error: false  # 出错时停止初始化，确保数据一致性
+      encoding: UTF-8
+      separator: ";"  # SQL语句分隔符
   
   # JPA配置
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none  # 禁用Hibernate自动创建表
     properties:
       hibernate:
-        format_sql: false  # 生产环境关闭SQL格式化
+        format_sql: true
+        jdbc:
+          batch_size: 50
+          batch_versioned_data: true
+    defer-datasource-initialization: true  # 确保schema.sql在JPA初始化后执行
   
   # Redis配置
   redis:
     host: localhost
     port: 6379
-    password:
-    database: 0
-    timeout: 10000
     lettuce:
       pool:
         max-active: 8
-        max-wait: -1
         max-idle: 8
         min-idle: 0
+    database: 0
 
 # 服务器配置
 server:
   port: 8080
   servlet:
     context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
 
 # 日志配置
 logging:
   level:
     root: INFO
     com.datascope: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: INFO  # 调整为INFO级别
+    org.springframework: INFO
+    org.hibernate: INFO
+    org.springframework.jdbc.datasource.init: DEBUG  # 添加SQL初始化脚本执行日志
   file:
-    name: logs/app.log
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   logback:
     rollingpolicy:
       max-file-size: 10MB
@@ -80,7 +91,8 @@ logging:
 # 应用配置
 datascope:
   cache:
-    query-result-ttl: 3600
+    type: redis
+    ttl: 3600
   datasource:
     connection-timeout: 30000
     validation-timeout: 5000
@@ -92,30 +104,64 @@ datascope:
 # 安全配置
 security:
   headers:
-    frame-options: DENY
-    content-type-options: nosniff
-    xss-protection: 1; mode=block
-    strict-transport-security: max-age=31536000; includeSubDomains
+    cache:
+      enabled: false
+    content-type:
+      enabled: true
+    frame:
+      enabled: true
+    xss:
+      enabled: true
+    hsts:
+      enabled: true
+      include-subdomains: true
+      max-age-seconds: 31536000
   cors:
-    allowed-origins: http://localhost:3000
-    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
-    allowed-headers: Authorization,Content-Type
-    exposed-headers: Authorization
+    allowed-origins: "*"
+    allowed-methods: "*"
+    allowed-headers: "*"
+    exposed-headers: "*"
     allow-credentials: true
     max-age: 3600
   rate-limit:
     enabled: true
     requests-per-minute: 60
     burst-size: 100
+  cookie:
+    http-only: true
+    secure: true
+    same-site: strict
 
-# Swagger配置
-springfox:
-  documentation:
+# SpringDoc配置
+springdoc:
+  api-docs:
     enabled: true
-    swagger:
-      v2:
-        path: /v2/api-docs
+    path: /v3/api-docs
   swagger-ui:
-    enabled: true
     path: /swagger-ui.html
-    auto-startup: true
+    operations-sorter: method
+    tags-sorter: alpha
+    disable-swagger-default-url: true
+  packages-to-scan: com.datascope.facade.controller
+  paths-to-match: /api/**
+
+web:
+  resources:
+    add-mappings: false
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+application:
+  meta:
+    default-page-size: 10
+    max-page-size: 100
+  data:
+    export:
+      max-rows: 100000
+      timeout: 300
+      path: ./export
+    import:
+      max-file-size: 100MB
+      timeout: 600

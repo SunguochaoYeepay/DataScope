@@ -14,6 +14,7 @@ public enum ColumnType {
   TEXT,
   DATE,
   TIME,
+  DATETIME,
   TIMESTAMP,
   BOOLEAN,
   BINARY,

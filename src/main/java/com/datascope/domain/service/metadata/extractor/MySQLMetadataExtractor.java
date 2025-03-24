@@ -40,8 +40,16 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
       List<String> schemas = getSchemas(connection);
 
       for (String schema : schemas) {
+        if (schema == null) {
+          continue;
+        }
+        
         List<String> tableNames = getTables(connection, schema);
         for (String tableName : tableNames) {
+          if (tableName == null) {
+            continue;
+          }
+          
           try {
             TableMetadata table = extractTable(dataSource, connection, schema, tableName);
             if (table != null) {
@@ -53,7 +61,7 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
         }
       }
     } catch (Exception e) {
-      log.error("Failed to extract metadata from datasource {}", dataSource.getId(), e);
+      log.error("Failed to extract all metadata", e);
     }
     return tables;
   }
@@ -72,7 +80,7 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
         stmt.setString(1, schema);
         stmt.setString(2, tableName);
         try (ResultSet rs = stmt.executeQuery()) {
-          if (rs.next()) {
+          if (rs != null && rs.next()) {
             table.setComment(rs.getString("table_comment"));
             table.setRowCount(rs.getLong("table_rows"));
             table.setDataSize(rs.getLong("data_length"));
@@ -83,11 +91,18 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
 
       // 提取列信息
       DatabaseMetaData metaData = connection.getMetaData();
-      try (ResultSet columns = metaData.getColumns(null, schema, tableName, null)) {
-        while (columns.next()) {
-          ColumnMetadata column = extractColumn(columns);
-          table.addColumn(column);
+      ResultSet columns = metaData.getColumns(null, schema, tableName, null);
+      if (columns != null) {
+        try {
+          while (columns.next()) {
+            ColumnMetadata column = extractColumn(columns);
+            table.addColumn(column);
+          }
+        } finally {
+          columns.close();
         }
+      } else {
+        log.warn("No columns found for table {}.{}", schema, tableName);
       }
 
       // 提取主键信息
@@ -165,7 +180,11 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
     try (Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery(SHOW_DATABASES)) {
       while (rs.next()) {
-        schemas.add(rs.getString(1));
+        String schemaName = rs.getString(1);
+        // 过滤掉系统数据库
+        if (schemaName != null && !isSystemSchema(schemaName)) {
+          schemas.add(schemaName);
+        }
       }
     } catch (Exception e) {
       log.error("Failed to get schemas", e);
@@ -176,11 +195,16 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
   @Override
   public List<String> getTables(Connection connection, String schema) {
     List<String> tables = new ArrayList<>();
-    try (PreparedStatement stmt = connection.prepareStatement(SHOW_TABLES)) {
-      stmt.setString(1, schema);
-      try (ResultSet rs = stmt.executeQuery()) {
+    try {
+      DatabaseMetaData metaData = connection.getMetaData();
+      String[] types = {"TABLE", "VIEW"};
+      try (ResultSet rs = metaData.getTables(null, schema, null, types)) {
         while (rs.next()) {
-          tables.add(rs.getString(1));
+          String tableName = rs.getString("TABLE_NAME");
+          // 过滤掉系统表
+          if (tableName != null && !isSystemTable(tableName)) {
+            tables.add(tableName);
+          }
         }
       }
     } catch (Exception e) {
@@ -204,7 +228,11 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
     column.setOrdinalPosition(rs.getInt("ORDINAL_POSITION"));
     column.setDefaultValue(rs.getString("COLUMN_DEF"));
     column.setComment(rs.getString("REMARKS"));
-    column.setAutoIncrement(rs.getString("IS_AUTOINCREMENT").equals("YES"));
+    
+    // IS_AUTOINCREMENT可能为空，添加安全处理
+    String isAutoIncrement = rs.getString("IS_AUTOINCREMENT");
+    column.setAutoIncrement(isAutoIncrement != null && isAutoIncrement.equals("YES"));
+    
     return column;
   }
 
@@ -212,7 +240,7 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
     return switch (jdbcType) {
       case Types.TINYINT -> ColumnType.TINYINT;
       case Types.SMALLINT -> ColumnType.SMALLINT;
-      case Types.INTEGER -> ColumnType.INTEGER;
+      case Types.INTEGER -> ColumnType.INTEGER;  // 统一处理为INTEGER
       case Types.BIGINT -> ColumnType.BIGINT;
       case Types.FLOAT -> ColumnType.FLOAT;
       case Types.DOUBLE -> ColumnType.DOUBLE;
@@ -234,5 +262,34 @@ public class MySQLMetadataExtractor implements MetadataExtractor {
         yield ColumnType.VARCHAR;
       }
     };
+  }
+
+  /**
+   * 判断是否是系统Schema
+   *
+   * @param schemaName Schema名称
+   * @return 是否是系统Schema
+   */
+  private boolean isSystemSchema(String schemaName) {
+    if (schemaName == null) {
+      return false;
+    }
+    return schemaName.equals("information_schema") 
+           || schemaName.equals("mysql") 
+           || schemaName.equals("performance_schema") 
+           || schemaName.equals("sys");
+  }
+  
+  /**
+   * 判断是否是系统表
+   *
+   * @param tableName 表名
+   * @return 是否是系统表
+   */
+  private boolean isSystemTable(String tableName) {
+    if (tableName == null) {
+      return false;
+    }
+    return tableName.startsWith("sys_") || tableName.startsWith("_");
   }
 }

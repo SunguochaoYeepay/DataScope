@@ -29,6 +29,20 @@ public class DataPreviewServiceImpl implements DataPreviewService {
     long startTime = System.currentTimeMillis();
     DataPreviewResponse response = new DataPreviewResponse();
 
+    // 参数验证
+    if (request == null) {
+      throw new IllegalArgumentException("请求不能为空");
+    }
+    if (request.getDataSourceId() == null || request.getDataSourceId().trim().isEmpty()) {
+      throw new IllegalArgumentException("数据源ID不能为空");
+    }
+    if (request.getSchema() == null || request.getSchema().trim().isEmpty()) {
+      throw new IllegalArgumentException("Schema不能为空");
+    }
+    if (request.getTableName() == null || request.getTableName().trim().isEmpty()) {
+      throw new IllegalArgumentException("表名不能为空");
+    }
+
     try {
       // 获取数据源
       DataSourceVO dataSourceVO = dataSourceService.get(request.getDataSourceId());
@@ -155,8 +169,9 @@ public class DataPreviewServiceImpl implements DataPreviewService {
   }
 
   private String quoteIdentifier(String identifier) {
-    // 简单的标识符转义，实际使用时应该根据不同数据库类型使用不同的转义规则
-    return "\"" + identifier.replace("\"", "\"\"") + "\"";
+    // 根据不同的数据库类型使用不同的标识符引用方式
+    // MySQL使用反引号，PostgreSQL使用双引号
+    return "`" + identifier.replace("`", "``") + "`";
   }
 
   private Object getColumnValue(ResultSet rs, ColumnMetadata column) throws SQLException {
