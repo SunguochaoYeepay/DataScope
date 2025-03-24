@@ -3,6 +3,7 @@
 智能数据管理和查询系统
 
 ## 最近更新
+- **2025-03-24**: 修复了 Swagger UI 和 OpenAPI 文档访问认证问题，现在可以直接访问文档
 - **2025-03-24**: 优化查询执行接口设计，遵循RESTful最佳实践，简化客户端API调用方式
 - **2025-03-24**: 修复了Flyway数据库迁移冲突问题，解决了应用启动失败的问题
 
@@ -129,7 +130,11 @@ java -jar target/datascope-1.0.0-SNAPSHOT.jar
 ```
 
 ### 验证部署
-访问 http://localhost:8080/api/actuator/health 检查应用状态
+访问 http://localhost:8082/api/actuator/health 检查应用状态
+
+### API 文档
+- Swagger UI: http://localhost:8082/api/swagger-ui/index.html
+- OpenAPI 文档: http://localhost:8082/api/v3/api-docs
 
 ## 项目结构
 ```

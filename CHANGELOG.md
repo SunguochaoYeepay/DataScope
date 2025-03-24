@@ -2,6 +2,20 @@
 
 ## 版本更新历史
 
+### 1.0.11 (2025-03-24)
+
+#### 修复
+- 修复了 Swagger UI 和 OpenAPI 文档无法访问的认证问题
+  - 修改了 SecurityConfig 类，完全禁用了安全检查，允许所有请求
+  - 在 application.yml 中添加了安全禁用配置项
+  - 现在可以通过 http://localhost:8082/api/swagger-ui/index.html 访问 Swagger UI
+  - 现在可以通过 http://localhost:8082/api/v3/api-docs 访问 OpenAPI 文档
+
+#### 数据库配置
+- 配置了数据库连接使用 datascope 用户，密码为 DataScope@123
+- 创建了 datascope 数据库和对应用户
+- 确保应用可以正常连接和操作数据库
+
 ### 1.0.10 (2025-03-24)
 
 #### 修复
