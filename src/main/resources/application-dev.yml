@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   # Flyway配置
   flyway:
     enabled: true
@@ -7,18 +9,25 @@ spring:
     baseline-version: 1.0.0
     validate-on-migrate: true
     clean-disabled: true
+    table: flyway_schema_history
+    out-of-order: false
+    placeholder-replacement: false
 
   # 数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/datascope?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:}
+    url: jdbc:mysql://localhost:3306/datascope?useUnicode=true&characterEncoding=utf-8&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: tZ_,;qP1?CtV
     driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 5
-      maximum-pool-size: 10
-      idle-timeout: 300000
-      connection-timeout: 20000
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      auto-commit: true
+      pool-name: DataScopeHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
       connection-test-query: SELECT 1
 
   # JPA配置
@@ -26,7 +35,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
@@ -47,7 +56,7 @@ spring:
 
 # 服务器配置
 server:
-  port: 8080
+  port: 8082
   servlet:
     context-path: /api
 
@@ -74,12 +83,18 @@ datascope:
     validation-timeout: 5000
     max-lifetime: 1800000
 
-# Swagger配置
-springfox:
-  documentation:
-    swagger-ui:
-      enabled: true
-      path: /swagger-ui.html
-    open-api:
-      enabled: true
-      path: /v3/api-docs
+# springdoc-openapi 配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    tags-sorter: alpha
+    operations-sorter: method
+    doc-expansion: none
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  paths-to-match: /**
+  packages-to-scan: com.datascope.facade.controller

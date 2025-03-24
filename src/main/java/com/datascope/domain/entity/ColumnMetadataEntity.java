@@ -1,67 +1,67 @@
 package com.datascope.domain.entity;
 
 import com.datascope.domain.model.metadata.ColumnType;
-import jakarta.persistence.*;
-import lombok.Data;
 import java.time.LocalDateTime;
+import javax.persistence.*;
+import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "column_metadata")
 public class ColumnMetadataEntity {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name = "table_metadata_id", nullable = false)
-    private Long tableMetadataId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "column_name", nullable = false)
-    private String name;
+  @Column(name = "table_metadata_id", nullable = false)
+  private Long tableMetadataId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "column_type", nullable = false)
-    private ColumnType type;
+  @Column(name = "column_name", nullable = false)
+  private String name;
 
-    @Column(name = "column_length")
-    private Integer length;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "column_type", nullable = false)
+  private ColumnType type;
 
-    @Column(name = "column_precision")
-    private Integer precision;
+  @Column(name = "column_length")
+  private Integer length;
 
-    @Column(name = "is_nullable")
-    private boolean nullable;
+  @Column(name = "column_precision")
+  private Integer precision;
 
-    @Column(name = "is_primary_key")
-    private boolean primaryKey;
+  @Column(name = "is_nullable")
+  private boolean nullable;
 
-    @Column(name = "ordinal_position")
-    private Integer ordinalPosition;
+  @Column(name = "is_primary_key")
+  private boolean primaryKey;
 
-    @Column(name = "default_value")
-    private String defaultValue;
+  @Column(name = "ordinal_position")
+  private Integer ordinalPosition;
 
-    @Column(name = "column_comment")
-    private String comment;
+  @Column(name = "default_value")
+  private String defaultValue;
 
-    @Column(name = "is_auto_increment")
-    private boolean autoIncrement;
+  @Column(name = "column_comment")
+  private String comment;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+  @Column(name = "is_auto_increment")
+  private boolean autoIncrement;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+  @Column(name = "created_at", nullable = false)
+  private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+  @Column(name = "updated_at", nullable = false)
+  private LocalDateTime updatedAt;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+  @PrePersist
+  protected void onCreate() {
+    createdAt = LocalDateTime.now();
+    updatedAt = LocalDateTime.now();
+  }
+
+  @PreUpdate
+  protected void onUpdate() {
+    updatedAt = LocalDateTime.now();
+  }
 }

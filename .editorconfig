@@ -10,27 +10,32 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-# Java文件配置
-[*.{java,groovy,gradle}]
+# Java 文件配置
+[*.java]
 indent_style = space
-indent_size = 4
-continuation_indent_size = 8
+indent_size = 2
+max_line_length = 100
 
-# 配置文件
-[*.{yml,yaml,json,xml}]
+# XML 文件配置
+[*.xml]
 indent_style = space
 indent_size = 2
 
-# Shell脚本
-[*.sh]
+# Properties 文件配置
+[*.properties]
 indent_style = space
 indent_size = 2
 
-# Markdown文件
+# YAML 文件配置
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON 文件配置
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Markdown 文件配置
 [*.md]
 trim_trailing_whitespace = false
-
-# SQL文件
-[*.sql]
-indent_style = space
-indent_size = 4

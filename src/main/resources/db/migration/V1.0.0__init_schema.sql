@@ -1,7 +1,7 @@
 -- 初始化数据库结构
 -- 创建数据源表
 CREATE TABLE IF NOT EXISTS `data_source` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `id` VARCHAR(36) NOT NULL COMMENT '主键ID',
     `name` VARCHAR(100) NOT NULL COMMENT '数据源名称',
     `type` VARCHAR(50) NOT NULL COMMENT '数据源类型(MYSQL/POSTGRESQL)',
     `host` VARCHAR(255) NOT NULL COMMENT '主机地址',
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `data_source` (
 -- 创建元数据表
 CREATE TABLE IF NOT EXISTS `metadata` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `data_source_id` BIGINT NOT NULL COMMENT '数据源ID',
+    `data_source_id` VARCHAR(36) NOT NULL COMMENT '数据源ID',
     `schema_name` VARCHAR(100) NOT NULL COMMENT '模式名',
     `table_name` VARCHAR(100) NOT NULL COMMENT '表名',
     `table_type` VARCHAR(50) NOT NULL COMMENT '表类型(TABLE/VIEW)',
@@ -42,35 +42,37 @@ CREATE TABLE IF NOT EXISTS `metadata` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='元数据表';
 
 -- 创建数据预览配置表
-CREATE TABLE IF NOT EXISTS `data_preview_config` (
+CREATE TABLE IF NOT EXISTS `preview_config` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `data_source_id` BIGINT NOT NULL COMMENT '数据源ID',
+    `data_source_id` VARCHAR(36) NOT NULL COMMENT '数据源ID',
     `table_name` VARCHAR(100) NOT NULL COMMENT '表名',
-    `sample_method` VARCHAR(50) NOT NULL COMMENT '采样方法(RANDOM/FIRST_N)',
-    `sample_size` INT NOT NULL COMMENT '采样大小',
+    `sample_size` INT NOT NULL DEFAULT 1000 COMMENT '采样大小',
+    `order_by` VARCHAR(100) DEFAULT NULL COMMENT '排序字段',
+    `desc` TINYINT NOT NULL DEFAULT 0 COMMENT '是否降序(0:否 1:是)',
+    `where_clause` VARCHAR(500) DEFAULT NULL COMMENT '过滤条件',
+    `include_system_columns` TINYINT NOT NULL DEFAULT 0 COMMENT '是否包含系统字段(0:否 1:是)',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `created_by` VARCHAR(100) NOT NULL COMMENT '创建人',
-    `updated_by` VARCHAR(100) NOT NULL COMMENT '更新人',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_source_table` (`data_source_id`, `table_name`),
     CONSTRAINT `fk_preview_config_data_source` FOREIGN KEY (`data_source_id`) REFERENCES `data_source` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据预览配置表';
 
 -- 创建数据质量规则表
-CREATE TABLE IF NOT EXISTS `data_quality_rule` (
+CREATE TABLE IF NOT EXISTS `quality_rule` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `data_source_id` BIGINT NOT NULL COMMENT '数据源ID',
+    `data_source_id` VARCHAR(36) NOT NULL COMMENT '数据源ID',
     `table_name` VARCHAR(100) NOT NULL COMMENT '表名',
-    `column_name` VARCHAR(100) NOT NULL COMMENT '列名',
-    `rule_type` VARCHAR(50) NOT NULL COMMENT '规则类型(NOT_NULL/UNIQUE/RANGE/REGEX/CUSTOM)',
-    `rule_params` JSON DEFAULT NULL COMMENT '规则参数',
+    `rule_type` VARCHAR(50) NOT NULL COMMENT '规则类型',
+    `rule_name` VARCHAR(100) NOT NULL COMMENT '规则名称',
+    `rule_config` TEXT NOT NULL COMMENT '规则配置(JSON)',
+    `enabled` TINYINT NOT NULL DEFAULT 1 COMMENT '是否启用(0:否 1:是)',
     `description` VARCHAR(500) DEFAULT NULL COMMENT '描述',
-    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态(0:禁用 1:启用)',
+    `last_check_time` DATETIME DEFAULT NULL COMMENT '最后检查时间',
+    `last_check_result` TINYINT DEFAULT NULL COMMENT '最后检查结果(0:失败 1:成功)',
+    `last_check_message` VARCHAR(500) DEFAULT NULL COMMENT '最后检查消息',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `created_by` VARCHAR(100) NOT NULL COMMENT '创建人',
-    `updated_by` VARCHAR(100) NOT NULL COMMENT '更新人',
     PRIMARY KEY (`id`),
     KEY `idx_data_source_table` (`data_source_id`, `table_name`),
     CONSTRAINT `fk_quality_rule_data_source` FOREIGN KEY (`data_source_id`) REFERENCES `data_source` (`id`) ON DELETE CASCADE
@@ -90,5 +92,5 @@ CREATE TABLE IF NOT EXISTS `data_quality_check_result` (
     PRIMARY KEY (`id`),
     KEY `idx_rule_id` (`rule_id`),
     KEY `idx_check_time` (`check_time`),
-    CONSTRAINT `fk_check_result_rule` FOREIGN KEY (`rule_id`) REFERENCES `data_quality_rule` (`id`) ON DELETE CASCADE
+    CONSTRAINT `fk_check_result_rule` FOREIGN KEY (`rule_id`) REFERENCES `quality_rule` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据质量检查结果表';
